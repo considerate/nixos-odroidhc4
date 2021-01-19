@@ -43,7 +43,8 @@ with lib;
     firmwareSize = 40;
     populateFirmwareCommands =
       ''
-        cp ${./boot.ini} ${./config.ini} firmware/
+        cp ${./boot.ini} firmware/boot.ini
+        cp ${./config.ini} firmware/config.ini
         cp ${linux_hardkernel}/Image.gz ${linux_hardkernel}/dtbs/amlogic/meson64_odroidhc4.dtb firmware/
       '';
     populateRootCommands = ''
