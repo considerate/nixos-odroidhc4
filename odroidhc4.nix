@@ -42,13 +42,8 @@ with lib;
   sdImage = {
     firmwareSize = 40;
     populateFirmwareCommands =
-      let
-        # https://github.com/jgmdev/archlinux-odroid/tree/master/uboot-odroid-c4
-        boot-ini = pkgs.writeText "boot.ini" ''
-        '';
-      in
       ''
-        cp ${boot-ini} firmware/boot.ini
+        cp ${./boot.ini} ${./config.ini} firmware/
         cp ${linux_hardkernel}/Image.gz ${linux_hardkernel}/dtbs/amlogic/meson64_odroidhc4.dtb firmware/
       '';
     populateRootCommands = ''
