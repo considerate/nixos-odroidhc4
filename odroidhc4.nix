@@ -7,18 +7,26 @@ let
     ];
   };
   uboot = pkgs.callPackage ./uboot.nix { };
+  nixpkgs = import ./nixpkgs.nix;
 in
 with lib;
 {
+  imports = [
+    "${nixpkgs}/nixos/modules/installer/cd-dvd/sd-image.nix"
+    ./base.nix
+    ./installation-device.nix
+  ];
   # pick the right kernel
   boot.kernelPackages = pkgs.linuxPackagesFor linux_hardkernel;
 
   # set cross compiling
   nixpkgs.crossSystem = {
     config = "aarch64-unknown-linux-gnu";
-    platform = (((import <stable/lib>).systems.examples.aarch64-multiplatform.platform) // {
+    platform = (((import "${nixpkgs}/lib").systems.examples.aarch64-multiplatform.platform) // {
+      kernelTarget = "Image.gz";
       gcc = {
-        arch = "armv8-a+crc+crypto";
+        arch = "armv8-a";
+        extraArgs = [ "-mcrc" "-mcrypto" ];
       };
     });
   };
@@ -26,27 +34,27 @@ with lib;
   #
   # Bootloader (UBoot, extlinux)
   #
+  boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible = {
     enable = true;
   };
-  # sdImage.populateBootCommands = with config.system.build; ''
-  #   ${installBootLoaderNative} ${toplevel} -d boot
-  # '';
-  # sdImage.postBuildCommands =
-  #   ''
-  #     dd if=${uboot}/u-boot.bin of=$img conv=notrunc bs=512 seek=1
-  #   '';
 
   sdImage = {
+    firmwareSize = 40;
     populateFirmwareCommands =
       let
+        # https://github.com/jgmdev/archlinux-odroid/tree/master/uboot-odroid-c4
         boot-ini = pkgs.writeText "boot.ini" ''
         '';
       in
       ''
         cp ${boot-ini} firmware/boot.ini
-        cp ${linux_hardkernel.kernel}/Image.gz ${linux_hardkernel.kernel}/dts/amlogic/meson64_odroidhc4.dtb firmware/
+        cp ${linux_hardkernel}/Image.gz ${linux_hardkernel}/dtbs/amlogic/meson64_odroidhc4.dtb firmware/
       '';
+    populateRootCommands = ''
+      mkdir -p ./files/boot
+      ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
+    '';
   };
 
   # networking
