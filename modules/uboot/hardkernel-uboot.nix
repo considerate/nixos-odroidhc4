@@ -28,15 +28,6 @@ in
         '';
       };
 
-      # configurationLimit = mkOption {
-      #   default = 20;
-      #   example = 10;
-      #   type = types.int;
-      #   description = ''
-      #     Maximum number of configurations in the boot menu.
-      #   '';
-      # };
-
       populateCmd = mkOption {
         type = types.str;
         readOnly = true;
