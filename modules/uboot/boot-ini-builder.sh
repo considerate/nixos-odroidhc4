@@ -99,6 +99,8 @@ addEntry() {
 
 tmpFile="$target/boot.ini.tmp.$$"
 
+# This configuration was adapted from the Ubuntu 20.04 image provided
+# on the Hardkernel Wiki.
 cat >$tmpFile <<EOF
 ODROIDC4-UBOOT-CONFIG
 # Generated file, all changes will be lost on nixos-rebuild!
