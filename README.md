@@ -1,6 +1,7 @@
 # Hardkernel NixOS for ODROID HC4
 
-This is an unofficial installation configuration of NixOS for the Hardkernel ODROID HC4 microcomputer.
+This is an unofficial installation configuration of [NixOS 20.09](https://nixos.org/manual/nixos/stable/) for the [Hardkernel ODROID
+HC4](https://wiki.odroid.com/odroid-hc4/odroid-hc4) microcomputer.
 
 To build an image that can be flashed to an SD card, run:
 
