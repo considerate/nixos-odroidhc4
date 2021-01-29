@@ -63,6 +63,22 @@ copyToKernelsDir() {
   result=$dst
 }
 
+copyInitrd() {
+  local src=$(readlink -f "$1")
+  local dst="$target/nixos/$(cleanName $src)"
+  if ! test -e $dst; then
+    local initrd=$dst.initrd.tmp.$$
+    local dstTmp=$dst.tmp.$$
+    # Unzip and convert ramdisk to uInitrd format (u-boot initrd)
+    gzip -d <"$path/initrd" >$initrd
+    mkimage -A arm64 -O linux -T ramdisk -C none -d "$initrd" "$dstTmp" >/dev/null
+    rm $initrd
+    mv $dstTmp $dst
+  fi
+  filesCopied[$dst]=1
+  result=$dst
+}
+
 # Copy its kernel, initrd and dtbs to $target/nixos, and echo out boot.ini entry
 addEntry() {
   local path=$(readlink -f "$1")
@@ -74,14 +90,8 @@ addEntry() {
 
   copyToKernelsDir "$path/kernel"
   kernel=$result
-  src=$(readlink -f "$path/initrd")
-  initrd="$target/nixos/$(cleanName $src)"
-  # Unzip and convert ramdisk to uInitrd format (u-boot initrd)
-  gzip -d <"$path/initrd" >"$target/nixos/initrd-$(cleanName $src)"
-  mkimage -A arm64 -O linux -T ramdisk -C none \
-    -d "$target/nixos/initrd-$(cleanName $src)" \
-    "$target/nixos/$(cleanName $src)" >/dev/null
-  rm -f "$target/nixos/initrd-$(cleanName $src)"
+  copyInitrd "$path/initrd"
+  initrd=$result
   dtbDir=$(readlink -m "$path/dtbs")
   if [ -e "$dtbDir" ]; then
     copyToKernelsDir "$dtbDir"
@@ -169,3 +179,11 @@ EOF
 
 mv -f $tmpFile $target/boot.ini
 cp -f @configIni@ $target/config.ini
+# Remove obsolete files from $target/nixos.
+for fn in $target/nixos/*; do
+  if ! test "${filesCopied[$fn]}" = 1; then
+    echo "Removing no longer needed boot file: $fn"
+    chmod +w -- "$fn"
+    rm -rf -- "$fn"
+  fi
+done
