@@ -11,7 +11,7 @@ let
   # The builder used to write during system activation
   builder = import ./boot-ini-builder.nix { inherit pkgs; };
   # The builder exposed in populateCmd, which runs on the build architecture
-  populateBuilder = import ./boot-ini-builder.nix { inherit pkgs; };
+  populateBuilder = import ./boot-ini-builder.nix { pkgs = pkgs.buildPackages; };
 in
 {
   options = {
