@@ -20,11 +20,8 @@ in
         default = false;
         type = types.bool;
         description = ''
-          Whether to generate an extlinux-compatible configuration file
-          under <literal>/boot/extlinux.conf</literal>.  For instance,
-          U-Boot's generic distro boot support uses this file format.
-          See <link xlink:href="http://git.denx.de/?p=u-boot.git;a=blob;f=doc/README.distro;hb=refs/heads/master">U-boot's documentation</link>
-          for more information.
+          Whether to generate a uboot-compatible configuration file
+          under <literal>/boot/boot.scr</literal>.
         '';
       };
 
@@ -44,11 +41,20 @@ in
 
   config =
     let
-      builderArgs = "-t ${timeoutStr}" + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
+      builderArgs =
+        assert lib.assertMsg (dtCfg.name != null) "hardware.deviceTree.name must be set";
+        "-t ${timeoutStr} -n ${dtCfg.name}";
     in
     mkIf cfg.enable {
       system.build.installBootLoader = "${builder} ${builderArgs} -c";
       system.boot.loader.id = "hardkernel-uboot";
       boot.loader.hardkernel-uboot.populateCmd = "${populateBuilder} ${builderArgs}";
+      system.extraSystemBuilderCmds = let
+        initrdUbootPath = pkgs.callPackage ./uboot-image.nix {
+          initrdPath = "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
+        };
+      in ''
+        ln -s ${initrdUbootPath} $out/initrd.uboot
+      '';
     };
 }

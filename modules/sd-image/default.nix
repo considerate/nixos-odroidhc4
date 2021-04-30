@@ -25,23 +25,25 @@ in
   nixpkgs.pkgs = import "${nixpkgs}" {
     inherit (config.nixpkgs) config localSystem crossSystem;
   };
+  nixpkgs.overlays = [
+    (import ../uboot-bin/overlay.nix)
+  ];
 
   sdImage = {
     compressImage = false;
-    # Use 512 MB for boot partition to fit multiple kernel versions
-    firmwareSize = 512;
-    # Copy u-boot bootloader to SD card
+    # Copy u-boot bootloader to SD card, set partition 1 (unused vfat
+    # "FIRMWARE") not bootable and partition 2 (ext4 main) bootable
     postBuildCommands = ''
       dd if="${pkgs.uboot_hardkernel}/u-boot.bin" of="$img" conv=fsync,notrunc bs=512 seek=1
+      { echo a; echo 1; echo a; echo 2; echo w; } | fdisk "$img"
     '';
-    # Fill the FIRMWARE partition with the u-boot files, linux kernel and initrd (ramdisk)
-    populateFirmwareCommands = ''
-      ${config.boot.loader.hardkernel-uboot.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
-    '';
+    # Ignore this
+    populateFirmwareCommands = "";
     # Fill the root partition with this nix configuration in /etc/nixos
-    # and create a mount point for the FIRMWARE partition at /boot
+    # and create an initial boot.scr in /boot
     populateRootCommands = ''
       mkdir -p ./files/boot
+      ${config.boot.loader.hardkernel-uboot.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
       mkdir -p ./files/etc/nixos
       cp ${../../configuration.nix} ./files/etc/nixos/configuration.nix
       cp -r ${../.} ./files/etc/nixos/modules

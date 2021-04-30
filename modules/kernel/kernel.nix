@@ -1,38 +1,32 @@
 { stdenv
-, buildPackages
 , fetchFromGitHub
-, perl
-, buildLinux
-, libelf
-, utillinux
-, lib
+, linuxManualConfig
 , ...
-}@args:
+}:
 
-buildLinux (args // rec {
-  version = "4.9.241-107";
+linuxManualConfig rec {
+  inherit stdenv;
+
+  version = "5.11.16";
 
   # modDirVersion needs to be x.y.z.
-  modDirVersion = "4.9.241";
+  modDirVersion = "5.11.16";
 
   # branchVersion needs to be x.y.
-  extraMeta.branch = "4.9";
-
-  # src = ./linux;
-  src = fetchFromGitHub {
-    owner = "hardkernel";
-    repo = "linux";
-    rev = version;
-    sha256 = "1f004ahbj0x5nmr0240jdv7v6ssgbxd53ivsv7gra87hcm00hbn3";
-  };
-
-  defconfig = "odroidg12_defconfig";
-
-  autoModules = false;
-  structuredExtraConfig = with lib.kernel; {
-    NR_CPUS = lib.mkForce (freeform "8");
-  };
-
+  extraMeta.branch = "5.11";
   extraMeta.platforms = [ "aarch64-linux" ];
+  # TODO: are these needed?
 
-} // (args.argsOverride or { }))
+  src = fetchFromGitHub {
+    owner = "tobetter";
+    repo = "linux";
+    rev = "ddd1bcb1f4d743a8f46b767c7ffc6bfc13f407bc";
+    sha256 = "186jj25bv7p4b8xjsbyiq7j3rnxwpb6q04h16gbm2gql2imy0d5r";
+  };
+
+  # Strip down kernel
+  configfile = ./config;
+
+  # Needs to be set when building with manual config
+  allowImportFromDerivation = true;
+}
