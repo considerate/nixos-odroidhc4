@@ -50,7 +50,7 @@ in
       system.boot.loader.id = "hardkernel-uboot";
       boot.loader.hardkernel-uboot.populateCmd = "${populateBuilder} ${builderArgs}";
       system.extraSystemBuilderCmds = let
-        initrdUbootPath = pkgs.callPackage ./uboot-image.nix {
+        initrdUbootPath = pkgs.buildPackages.callPackage ./uboot-image.nix {
           initrdPath = "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
         };
       in ''
