@@ -3,24 +3,25 @@ with lib;
 {
   imports = [
     ../base.nix
-    ../uboot/hardkernel-uboot.nix
+    ../uboot-script
   ];
-  # The linux kernel used is compiled from the Hardkernel fork of
-  # torvalds/linux
-  boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linux_hardkernel;
+  boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linux_tobetter;
 
   boot.initrd.availableKernelModules = [ ];
 
   nixpkgs.overlays = [
     (import ../kernel/overlay.nix)
-    (import ../uboot/overlay.nix)
   ];
 
-  # Bootloader (use Hardkernel fork of Das U-Boot)
+  # Bootloader (u-boot is installed, generate /boot/boot.scr for it)
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = false;
   boot.loader.hardkernel-uboot.enable = true;
 
+  # DTB file to use. This one is present in the hardkernel and tobetter tree
+  # only. For real mainline kernel use "amlogic/meson-sm1-odroid-hc4.dtb"
+  # instead, and some peripherals might not work.
+  hardware.deviceTree.name = "amlogic/meson64_odroidhc4.dtb";
 
   # SSH
   services.openssh.enable = true;
@@ -49,10 +50,6 @@ with lib;
   };
 
   fileSystems = {
-    "/boot" = {
-      device = "/dev/disk/by-label/FIRMWARE";
-      fsType = "vfat";
-    };
     "/" = {
       device = "/dev/disk/by-label/NIXOS_SD";
       fsType = "ext4";
