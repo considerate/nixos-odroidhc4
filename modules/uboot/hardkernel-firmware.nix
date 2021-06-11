@@ -65,7 +65,7 @@ in
     src = fetchgit {
       url = "https://github.com/hardkernel/u-boot.git";
       rev = "90ebb7015c1bfbbf120b2b94273977f558a5da46"; # "odroidg12-v2015.01"
-      sha256 = "1v8z5m0k6a9iw0qbkn6qcwh02rsdsfax29l2ilshr39a3nj40i96";
+      sha256 = "sha256-2yOiwz69LKNUp0ZzTsg4w1cfeEZ3xEelhTXhpMT8qRk=";
       leaveDotGit = true;
     };
 
