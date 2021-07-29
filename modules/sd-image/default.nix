@@ -23,7 +23,8 @@ in
     firmwareSize = 512;
     # Copy u-boot bootloader to SD card
     postBuildCommands = ''
-      dd if="${pkgs.uboot_hardkernel}/u-boot.bin" of="$img" conv=fsync,notrunc bs=512 seek=1
+      dd if="${pkgs.uboot-hardkernel}" of="$img" conv=fsync,notrunc bs=512 skip=1 seek=1
+      dd if="${pkgs.uboot-hardkernel}" of="$img" conv=fsync,notrunc bs=1 count=444
     '';
     # Fill the FIRMWARE partition with the u-boot files, linux kernel and initrd (ramdisk)
     populateFirmwareCommands = ''

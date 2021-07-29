@@ -1,9 +1,28 @@
-final: prev: {
-  uboot_hardkernel = final.callPackage ./u-boot-odroid.nix {
-    inherit (final.callPackage ./hardkernel-firmware.nix { }) firmwareOdroidC4;
+final: prev:
+let
+  platform = final.lib.systems.examples.aarch64-multiplatform // {
+    gcc = {
+      arch = "armv8-a+crypto";
+    };
   };
-  ubootTools_hardkernel = final.buildPackages.callPackage ./uboot-tools.nix { };
+  arm64 = final.pkgsCross.aarch64-embedded;
+  arm = final.pkgsCross.arm-embedded;
+  uboot-hardkernel = arm64.callPackage ./hardkernel.nix {
+    arm-gcc49 = arm.buildPackages.gcc49;
+  };
+  with-crypto = import final.path {
+    crossSystem = platform;
+  };
+  meson64-tools = with-crypto.callPackage ./meson64-tools.nix { };
+  blx_fix = arm64.buildPackages.callPackage ./blx_fix.nix { };
+  uboot = arm64.callPackage ./u-boot.nix {
+    inherit uboot-hardkernel meson64-tools blx_fix;
+  };
+in
+{
+  uboot-hardkernel = uboot;
+  ubootTools-hardkernel = final.buildPackages.ubootTools;
   buildPackages = prev.buildPackages // {
-    ubootTools_hardkernel = final.buildPackages.buildPackages.callPackage ./uboot-tools.nix { };
+    ubootTools-hardkernel = final.buildPackages.buildPackages.ubootTools;
   };
 }

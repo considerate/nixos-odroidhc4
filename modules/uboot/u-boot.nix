@@ -1,105 +1,99 @@
-{ defconfig ? "odroidc4_defconfig"
-, installDir ? "$out"
-, lib
-, filesToInstall
-, gcc49Stdenv
-, gcc49
+{ stdenv
 , git
 , bc
 , bison
 , flex
 , nettools
 , openssl
-, stdenv
+, gcc
 , buildPackages
-, pkgsCross
-, extraMakeFlags ? [ ]
-, extraMeta ? { }
-, crossCompile ? true
-, ...
-}@args:
+, uboot-hardkernel
+, meson64-tools
+, blx_fix
+}:
 let
-  arm = pkgsCross.arm-embedded;
-  arm64 = pkgsCross.aarch64-embedded;
-  defaultArgs = rec {
-    pname = "uboot";
-    version = "odroidg12-v2015.01";
-    src = buildPackages.fetchFromGitHub {
-      owner = "hardkernel";
-      repo = "u-boot";
-      rev = "90ebb7015c1bfbbf120b2b94273977f558a5da46";
-      sha256 = "0kv9hpsgpbikp370wknbyj6r6cyhp7hng3ng6xzzqaw13yy4qiz9";
-    };
-    patches = [
-      ./uboot.diff
-    ];
-    makeFlags = [
-      "DTC=dtc"
-    ]
-    ++ lib.optional (!crossCompile) "CROSS_COMPILE=${gcc49Stdenv.cc.targetPrefix}"
-    ++ extraMakeFlags;
-    # CROSS_COMPILE can't be specfied as a make flag because we need arm-none-eabi-
-    # to be used for the boot loader firmware, and specifying it in `makeFlags` overrides
-    # the setting of CROSS_COMPILE to "arm-none-eabi-".
-    configurePhase = lib.optionalString crossCompile
-      ''
-        export "CROSS_COMPILE=${gcc49Stdenv.cc.targetPrefix}"
-      '' + ''
-      rm fip/fip_create
-      export ARCH=arm
-      echo $CROSS_COMPILE
-      make ${defconfig}
-    '';
-    installPhase = ''
-      runHook preInstall
-      mkdir -p ${installDir}
-      cp ${lib.concatStringsSep " " filesToInstall} ${installDir}
-      runHook postInstall
-    '';
-    depsBuildBuild = [
-      arm.buildPackages.gcc49
-      buildPackages.gcc49Stdenv.cc
-    ];
-    nativeBuildInputs = [
-      git
-      bc
-      bison
-      flex
-      nettools
-      openssl
-    ];
-    # make[2]: *** No rule to make target 'lib/efi_loader/helloworld.efi', needed by '__build'.  Stop.
-    enableParallelBuilding = false;
-
-    dontStrip = true;
-    meta = with lib; {
-      homepage = "http://www.denx.de/wiki/U-Boot/";
-      description = "Boot loader for embedded systems";
-      license = licenses.gpl2;
-      maintainers = with maintainers; [ dezgeg samueldr lopsided98 ];
-    } // extraMeta;
-  };
-  finalArgs = defaultArgs //
-    (builtins.removeAttrs
-      args
-      [
-        "lib"
-        "filesToInstall"
-        "gcc49Stdenv"
-        "gcc49"
-        "git"
-        "bc"
-        "bison"
-        "flex"
-        "nettools"
-        "openssl"
-        "stdenv"
-        "buildPackages"
-        "pkgsCross"
-        "extraMakeFlags"
-        "extraMeta"
-        "crossCompile"
-      ]
-    );
 in
-gcc49Stdenv.mkDerivation finalArgs
+stdenv.mkDerivation {
+  name = "uboot";
+  src = builtins.fetchTarball {
+    url = "https://github.com/u-boot/u-boot/archive/15f7e0dc01d8a851fb1bfbf0e47eab5b67ed26b3.tar.gz";
+    sha256 = "1ardkap35pi2dsajag728fnvlvpfmdrsa0igj93wbkbf2ypzzhf6";
+  };
+  CROSS_COMPILE = stdenv.cc.targetPrefix;
+  configurePhase = ''
+    make odroid-c4_defconfig
+  '';
+  buildPhase = ''
+    make
+  '';
+  installPhase = ''
+    mkdir fip
+    cp ${uboot-hardkernel}/fip/* fip/
+    cp u-boot.bin fip/bl33.bin
+    ${blx_fix} \
+      fip/bl30.bin \
+      fip/zero_tmp \
+      fip/bl30_zero.bin \
+      fip/bl301.bin \
+      fip/bl301_zero.bin \
+      fip/bl30_new.bin \
+      bl30
+
+    ${blx_fix} \
+      fip/bl2.bin \
+      fip/zero_tmp \
+      fip/bl2_zero.bin \
+      fip/acs.bin \
+      fip/bl21_zero.bin \
+      fip/bl2_new.bin \
+      bl2
+
+    ${meson64-tools}/bin/bl30sig \
+      --input fip/bl30_new.bin \
+      --output fip/bl30_new.bin.g12a.enc \
+      --level v3
+    ${meson64-tools}/bin/bl3sig \
+      --input fip/bl30_new.bin.g12a.enc \
+      --output fip/bl30_new.bin.enc \
+      --level v3 --type bl30
+    ${meson64-tools}/bin/bl3sig \
+      --input fip/bl31.img \
+      --output fip/bl31.img.enc \
+      --level v3 --type bl31
+    ${meson64-tools}/bin/bl3sig \
+      --input fip/bl33.bin --compress lz4 \
+      --output fip/bl33.bin.enc \
+      --level v3 --type bl33 --compress lz4
+    ${meson64-tools}/bin/bl2sig \
+      --input fip/bl2_new.bin \
+      --output fip/bl2.n.bin.sig
+    ${meson64-tools}/bin/bootmk \
+      --output $out \
+      --bl2 fip/bl2.n.bin.sig \
+      --bl30 fip/bl30_new.bin.enc \
+      --bl31 fip/bl31.img.enc \
+      --bl33 fip/bl33.bin.enc \
+      --ddrfw1 fip/ddr4_1d.fw \
+      --ddrfw2 fip/ddr4_2d.fw \
+      --ddrfw3 fip/ddr3_1d.fw \
+      --ddrfw4 fip/piei.fw \
+      --ddrfw5 fip/lpddr4_1d.fw \
+      --ddrfw6 fip/lpddr4_2d.fw \
+      --ddrfw7 fip/diag_lpddr4.fw \
+      --ddrfw8 fip/aml_ddr.fw \
+      --ddrfw9 fip/lpddr3_1d.fw \
+      --level v3
+  '';
+  nativeBuildInputs = [
+    git
+    bc
+    bison
+    flex
+    nettools
+  ];
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    buildPackages.openssl.dev
+  ];
+}

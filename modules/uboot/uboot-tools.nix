@@ -1,9 +1,9 @@
 { buildUBoot, fetchurl, lib }:
 buildUBoot {
-  version = "2021.01";
-  src = fetchurl {
-    url = "ftp://ftp.denx.de/pub/u-boot/u-boot-2021.01.tar.bz2";
-    sha256 = "0m04glv9kn3bhs62sn675w60wkrl4m3a4hnbnnw67s3l198y21xl";
+  version = "2021.10";
+  src = builtins.fetchTarball {
+    url = "https://github.com/u-boot/u-boot/archive/15f7e0dc01d8a851fb1bfbf0e47eab5b67ed26b3.tar.gz";
+    sha256 = "1ardkap35pi2dsajag728fnvlvpfmdrsa0igj93wbkbf2ypzzhf6";
   };
   defconfig = "tools-only_defconfig";
   installDir = "$out/bin";

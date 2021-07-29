@@ -2,19 +2,10 @@ diff --git a/Makefile b/Makefile
 index 730e8d752f..127a260ee8 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -134,7 +134,7 @@ ifneq ($(KBUILD_OUTPUT),)
- # check that the output directory actually exists
- saved-output := $(KBUILD_OUTPUT)
- KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
--								&& /bin/pwd)
-+								&& pwd)
- $(if $(KBUILD_OUTPUT),, \
-      $(error failed to create output directory "$(saved-output)"))
- 
 @@ -875,8 +875,14 @@ $(ACS_BINARY): tools prepare u-boot.bin
  bl21.bin: tools prepare u-boot.bin acs.bin
  	$(Q)$(MAKE) -C $(srctree)/$(CPUDIR)/${SOC}/firmware/bl21 all FIRMWARE=$@
- 
+
 +.PHONY: fip_create
 +fip_create:
 +	$(Q)$(MAKE) -C $(srctree)/tools/fip_create/
@@ -25,7 +16,7 @@ index 730e8d752f..127a260ee8 100644
 -fip.bin bootimage: $(ACS_BINARY) $(BL301_BINARY)
 +fip.bin bootimage: $(ACS_BINARY) $(BL301_BINARY) fip_create
  	$(Q)$(MAKE) -C $(srctree)/fip $@
- 
+
  #
 diff --git a/tools/fip_create/Makefile b/tools/fip_create/Makefile
 new file mode 100644
