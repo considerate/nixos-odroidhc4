@@ -50,9 +50,8 @@
   ];
 
   # Include support for various filesystems.
-  # cifs fails when cross-compiling due to its dependency talloc failing to compile
   # zfs fails when cross-compiling due to not being able to build kernel module
-  boot.supportedFilesystems = [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" ];
+  boot.supportedFilesystems = [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" "cifs" ];
 
   # Configure host id for ZFS to work
   networking.hostId = lib.mkDefault "8425e349";
