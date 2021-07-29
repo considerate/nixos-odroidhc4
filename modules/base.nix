@@ -33,7 +33,7 @@
     # Hardware-related tools.
     pkgs.sdparm
     pkgs.hdparm
-    # pkgs.smartmontools # for diagnosing hard disks
+    pkgs.smartmontools # for diagnosing hard disks
     pkgs.pciutils
     pkgs.usbutils
 
