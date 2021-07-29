@@ -9,7 +9,7 @@ with lib;
   # torvalds/linux
   boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linux_hardkernel;
 
-  boot.initrd.availableKernelModules = [ ];
+  boot.initrd.availableKernelModules = mkForce [ ];
 
   nixpkgs.overlays = [
     (import ../kernel/overlay.nix)
@@ -37,16 +37,6 @@ with lib;
 
   # set a default root password
   users.users.root.initialPassword = "toor";
-
-  # Install cachix binary cache for faster installations
-  nix = {
-    binaryCaches = [
-      "https://considerate.cachix.org"
-    ];
-    binaryCachePublicKeys = [
-      "considerate.cachix.org-1:qI1u8kAd+aovY5qxCgby2OJhfp7ZMVwCt6JyT2V6rfM="
-    ];
-  };
 
   fileSystems = {
     "/boot" = {

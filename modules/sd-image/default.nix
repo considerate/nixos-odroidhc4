@@ -4,22 +4,13 @@ let
 in
 {
   imports = [
-    "${nixpkgs}/nixos/modules/installer/cd-dvd/sd-image.nix"
+    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
     ../installation-device.nix
     ../odroidhc4
   ];
 
   # set cross compiling
-  nixpkgs.crossSystem = {
-    config = "aarch64-unknown-linux-gnu";
-    platform = lib.systems.examples.aarch64-multiplatform.platform // {
-      kernelTarget = "Image.gz";
-      gcc = {
-        arch = "armv8-a";
-        extraArgs = [ "-mcrc" "-mcrypto" ];
-      };
-    };
-  };
+  nixpkgs.crossSystem.config = "aarch64-unknown-linux-gnu";
 
   # Use pinned packages
   nixpkgs.pkgs = import "${nixpkgs}" {
