@@ -115,7 +115,7 @@ cat >$tmpFile <<EOF
 ODROIDC4-UBOOT-CONFIG
 # Generated file, all changes will be lost on nixos-rebuild!
 
-setenv bootlabel "Hardkernel NixOS 20.09"
+setenv bootlabel "Hardkernel NixOS 21.05"
 
 setenv board "odroidc4"
 setenv display_autodetect "true"
