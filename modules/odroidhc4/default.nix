@@ -38,16 +38,6 @@ with lib;
   # set a default root password
   users.users.root.initialPassword = "toor";
 
-  # Install cachix binary cache for faster installations
-  nix = {
-    binaryCaches = [
-      "https://considerate.cachix.org"
-    ];
-    binaryCachePublicKeys = [
-      "considerate.cachix.org-1:qI1u8kAd+aovY5qxCgby2OJhfp7ZMVwCt6JyT2V6rfM="
-    ];
-  };
-
   fileSystems = {
     "/boot" = {
       device = "/dev/disk/by-label/FIRMWARE";
