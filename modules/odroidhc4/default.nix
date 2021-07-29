@@ -9,7 +9,7 @@ with lib;
   # torvalds/linux
   boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linux_hardkernel;
 
-  boot.initrd.availableKernelModules = [ ];
+  boot.initrd.availableKernelModules = mkForce [ ];
 
   nixpkgs.overlays = [
     (import ../kernel/overlay.nix)
