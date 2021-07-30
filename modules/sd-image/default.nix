@@ -1,21 +1,10 @@
-{ pkgs, lib, config, ... }:
-let
-  nixpkgs = import ../nixpkgs/cross-compilation.nix;
-in
+{ pkgs, lib, config, modulesPath, ... }:
 {
   imports = [
-    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
+    "${modulesPath}/installer/sd-card/sd-image.nix"
     ../installation-device.nix
     ../odroidhc4
   ];
-
-  # set cross compiling
-  nixpkgs.crossSystem.config = "aarch64-unknown-linux-gnu";
-
-  # Use pinned packages
-  nixpkgs.pkgs = import "${nixpkgs}" {
-    inherit (config.nixpkgs) config localSystem crossSystem;
-  };
 
   sdImage = {
     compressImage = false;
@@ -33,8 +22,7 @@ in
     # Fill the root partition with this nix configuration in /etc/nixos
     # and create a mount point for the FIRMWARE partition at /boot
     populateRootCommands = ''
-      mkdir -p ./files/boot
-      mkdir -p ./files/etc/nixos
+      mkdir -p ./files/boot ./files/etc/nixos
       cp ${../../configuration.nix} ./files/etc/nixos/configuration.nix
       cp -r ${../.} ./files/etc/nixos/modules
     '';

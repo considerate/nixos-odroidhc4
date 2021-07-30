@@ -14,8 +14,8 @@ with lib;
   hardware.enableRedistributableFirmware = mkForce false;
 
   nixpkgs.overlays = [
-    (import ../kernel/overlay.nix)
-    (import ../uboot/overlay.nix)
+    (import ../../overlays/kernel/overlay.nix)
+    (import ../../overlays/uboot/overlay.nix)
   ];
 
   # Bootloader (use Hardkernel fork of Das U-Boot)

@@ -1,6 +1,6 @@
 { pkgs, lib, config, ... }:
 let
-  nixpkgs = import ./modules/nixpkgs;
+  nixpkgs = import ./nixpkgs;
 in
 {
   imports = [
