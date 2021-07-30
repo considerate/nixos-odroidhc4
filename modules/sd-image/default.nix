@@ -1,6 +1,6 @@
 { pkgs, lib, config, ... }:
 let
-  nixpkgs = import ../nixpkgs/cross-compilation.nix;
+  nixpkgs = import ../nixpkgs;
 in
 {
   imports = [

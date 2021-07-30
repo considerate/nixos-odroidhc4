@@ -1,8 +1,5 @@
 let
-  # Use patched version of nixpkgs to enable cross-compilation
-  # to aarch64 so that we can build the SD-image on a non-ARM
-  # platform.
-  nixpkgs = import ./modules/nixpkgs/cross-compilation.nix;
+  nixpkgs = import ./modules/nixpkgs;
   nixos = import "${nixpkgs}/nixos" {
     configuration = { ... }: {
       imports = [
