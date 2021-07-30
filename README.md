@@ -22,7 +22,7 @@ $ etcher
 $ sudo etcher --no-sandbox
 ```
 
-Select the SD card image from `result/sd-image/nixos-sd-image-20.09pre-git-aarch64-linux.img` and the SD card device and
+Select the SD card image from `result/sd-image/nixos-sd-image-21.05pre-git-aarch64-linux.img` and the SD card device and
 flash the image onto the device.
 
 # Boot the device
