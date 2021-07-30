@@ -2,10 +2,9 @@
 
 gcc49Stdenv.mkDerivation {
   name = "hardkernel-uboot";
-  src = builtins.fetchGit {
-    url = "git@github.com:hardkernel/u-boot.git";
-    ref = "odroidg12-v2015.01";
-    rev = "766167bbe787e494e47376b31cd017b897e9594c";
+  src = builtins.fetchTarball {
+    url = "https://github.com/hardkernel/u-boot/archive/766167bbe787e494e47376b31cd017b897e9594c.tar.gz";
+    sha256 = "0hj49jf9w2w55r7fjpx8asb92r85lws8mvq4mvl1v309z7k56zwv";
   };
   patches = [ ./pwd.diff ./fip_create.diff ];
   nativeBuildInputs = [
