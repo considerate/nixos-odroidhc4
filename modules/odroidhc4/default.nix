@@ -1,10 +1,19 @@
 { pkgs, config, lib, ... }:
 with lib;
+
+let
+  nixpkgs = import ../nixpkgs;
+in
 {
   imports = [
-    ../base.nix
+    "${nixpkgs}/nixos/modules/profiles/base.nix"
     ../uboot/hardkernel-uboot.nix
   ];
+
+  # Remove zfs from supported filesystems as it fails when cross-compiling due
+  # to not being able to build kernel module
+  boot.supportedFilesystems = mkForce [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" "cifs" ];
+
   # The linux kernel used is compiled from the Hardkernel fork of
   # torvalds/linux
   boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linux_hardkernel;
