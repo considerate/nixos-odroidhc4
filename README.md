@@ -22,7 +22,7 @@ $ etcher
 $ sudo etcher --no-sandbox 
 ```
 
-Select the SD card image from `result/sd-image/nixos-sd-image-20.09pre-git-aarch64-linux.img` and the SD card device and
+Select the SD card image from `result/sd-image/nixos-sd-image-21.05pre-git-aarch64-linux.img` and the SD card device and
 flash the image onto the device.
 
 # Boot the device
@@ -33,10 +33,6 @@ Insert the flashed SD card into your HC4 device and let it boot.
 
 Log in to your booted device over SSH and run an initial `nixos-rebuild switch` to get the non-cross compiled versions
 of all packages. This will also update the u-boot bootloader to load the recently built version of NixOS.
-
-If you haven't changed the nixpkgs pin or the nix binary cache configuration the packages will be fetched from
-[considerate.cachix.org](https://app.cachix.org/cache/considerate). If you don't trust the binary cache you can disable
-this configuration and compile everything yourself for about 3-4 hours.
 
 # NixOS generations and limitations of the current configuration
 
