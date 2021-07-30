@@ -1,8 +1,8 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, modulesPath, ... }:
 with lib;
 {
   imports = [
-    ../base.nix
+    "${modulesPath}/profiles/base.nix"
     ../uboot/hardkernel-uboot.nix
   ];
   # The linux kernel used is compiled from the Hardkernel fork of
@@ -11,6 +11,7 @@ with lib;
 
   boot.initrd.availableKernelModules = mkForce [ ];
 
+  # We do know the hardware we are planning to deploy to
   hardware.enableRedistributableFirmware = mkForce false;
 
   nixpkgs.overlays = [
