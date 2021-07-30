@@ -59,9 +59,7 @@ with lib;
     # stdenv in the Nix store on the CD.
     system.extraDependencies = with pkgs;
       [
-        stdenv
         stdenvNoCC # for runCommand
-        busybox
         jq # for closureInfo
       ];
 

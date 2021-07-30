@@ -11,6 +11,8 @@ with lib;
 
   boot.initrd.availableKernelModules = mkForce [ ];
 
+  hardware.enableRedistributableFirmware = mkForce false;
+
   nixpkgs.overlays = [
     (import ../kernel/overlay.nix)
     (import ../uboot/overlay.nix)

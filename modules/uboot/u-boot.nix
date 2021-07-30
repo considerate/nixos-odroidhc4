@@ -5,7 +5,6 @@
 , flex
 , nettools
 , openssl
-, gcc
 , buildPackages
 , uboot-hardkernel
 , meson64-tools
