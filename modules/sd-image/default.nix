@@ -8,6 +8,14 @@
     ../odroidhc4
   ];
 
+  security.polkit.enable = false;
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      smartmontools = prev.smartmontools.override { enableMail = false; };
+    })
+  ];
+
   # Remove zfs from supported filesystems as it fails when cross-compiling due
   # to not being able to build kernel module
   boot.supportedFilesystems = lib.mkForce [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" "cifs" ];
