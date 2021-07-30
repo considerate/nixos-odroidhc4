@@ -5,7 +5,7 @@ in
 {
   imports = [
     "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
-    ../installation-device.nix
+    "${nixpkgs}/nixos/modules/profiles/installation-device.nix"
     ../odroidhc4
   ];
 
@@ -16,6 +16,9 @@ in
   nixpkgs.pkgs = import "${nixpkgs}" {
     inherit (config.nixpkgs) config localSystem crossSystem;
   };
+
+  # Disable configuration cloning as we are copying the file manually
+  installer.cloneConfig = false;
 
   sdImage = {
     compressImage = false;
