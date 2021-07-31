@@ -2,6 +2,9 @@ final: prev: {
   linux_hardkernel = final.linux.override {
     # Configuration provided by elatllat
     # https://forum.odroid.com/viewtopic.php?f=176&t=33993&p=261833#p261833
+    # I had to drop "DM_CRYPT y" because of repeated question error in
+    # generate-config.pl I hope the default "CONFIG_DM_CRYPT=m" will work
+    # fine for the HC4.
     extraConfig = ''
       MDIO_BUS_MUX_MESON_G12A y
       ARCH_MESON y

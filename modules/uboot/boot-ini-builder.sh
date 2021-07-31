@@ -70,7 +70,7 @@ copyInitrd() {
     local initrd=$dst.initrd.tmp.$$
     local dstTmp=$dst.tmp.$$
     # Unzip and convert ramdisk to uInitrd format (u-boot initrd)
-    gzip -d <"$path/initrd" >$initrd
+    zstd -d "$src" -o "$initrd"
     mkimage -A arm64 -O linux -T ramdisk -C none -d "$initrd" "$dstTmp" >/dev/null
     rm $initrd
     mv $dstTmp $dst

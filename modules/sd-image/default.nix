@@ -26,11 +26,11 @@
     firmwareSize = 512;
     # Copy u-boot bootloader to SD card
     postBuildCommands = ''
-      dd if="${pkgs.uboot-hardkernel}" of="$img" conv=fsync,notrunc bs=512 skip=1 seek=1
-      dd if="${pkgs.uboot-hardkernel}" of="$img" conv=fsync,notrunc bs=1 count=444
+      dd if="${pkgs.uboot-hardkernel}" of="$img" conv=fsync,notrunc bs=512 seek=1
     '';
     # Fill the FIRMWARE partition with the u-boot files, linux kernel and initrd (ramdisk)
     populateFirmwareCommands = ''
+      echo Populate firmware
       ${config.boot.loader.hardkernel-uboot.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
     '';
     # Fill the root partition with this nix configuration in /etc/nixos

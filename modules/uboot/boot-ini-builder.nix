@@ -9,6 +9,7 @@ pkgs.substituteAll {
     pkgs.gnugrep
     pkgs.gzip
     pkgs.ubootTools-hardkernel
+    pkgs.zstd
   ];
   configIni = ./config.ini;
   inherit (pkgs) bash;
