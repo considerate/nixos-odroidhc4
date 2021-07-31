@@ -12,6 +12,7 @@ jobs:
         nix_path: nixpkgs=channel:nixos-21.05
     - uses: cachix/cachix-action@v10
       with:
+        pushFilter: '(-source$|\.tar\.gz$|nixos-sd-image)'
         name: considerate
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
     - run: nix-build
