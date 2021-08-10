@@ -98,9 +98,13 @@ addEntry() {
     dtbs=$result
   fi
 
-  echo "load mmc \${devno}:1 \${k_addr} nixos/$(basename $kernel)"
-  echo "load mmc \${devno}:1 \${dtb_loadaddr} nixos/$(basename $dtbs)/amlogic/meson64_odroid\${variant}.dtb"
+  echo "echo \"loading kernel\""
+  echo "load mmc \${devno}:1 \${loadaddr} nixos/$(basename $kernel)"
+  dtb=${dtbName:-amlogic/meson-sm1-odroid-hc4.dtb}
+  echo "echo \"loading device tree\""
+  echo "load mmc \${devno}:1 \${dtb_loadaddr} nixos/$(basename $dtbs)/$dtb"
   echo "fdt addr \${dtb_loadaddr}"
+  echo "echo \"loading init ramdisk\""
   echo "load mmc \${devno}:1 \${initrd_loadaddr} nixos/$(basename $initrd)"
   echo "setenv bootargs \"\${bootargs} \""
   echo "# Boot Args"
@@ -112,12 +116,14 @@ tmpFile="$target/boot.ini.tmp.$$"
 # This configuration was adapted from the Ubuntu 20.04 image provided
 # on the Hardkernel Wiki.
 cat >$tmpFile <<EOF
-ODROIDC4-UBOOT-CONFIG
+ODROIDHC4-UBOOT-CONFIG
 # Generated file, all changes will be lost on nixos-rebuild!
 
 setenv bootlabel "Hardkernel NixOS 21.05"
 
-setenv board "odroidc4"
+echo "Booting \${bootlabel}..."
+
+setenv board "odroidhc4"
 setenv display_autodetect "true"
 setenv hdmimode "1080p60hz"
 setenv monitor_onoff "false" # true or false
@@ -133,20 +139,13 @@ setenv enable_wol "0"
 
 # Set load addresses
 setenv dtb_loadaddr "0x10000000"
-setenv dtbo_addr_r "0x11000000"
-setenv k_addr "0x1100000"
 setenv loadaddr "0x1B00000"
 setenv initrd_loadaddr "0x00000000"
 
-if test "\${variant}" = "hc4"; then
-   setenv max_freq_a55 "1800"
-fi
+setenv max_freq_a55 "1800"
 
 load mmc \${devno}:1 \${loadaddr} config.ini \
   && ini generic \${loadaddr}
-if test "x\${overlay_profile}" != "x"; then
-  ini overlay_\${overlay_profile} \${loadaddr}
-fi
 
 setenv condev "console=ttyS0,115200n8"   # on both
 
@@ -163,17 +162,8 @@ EOF
 addEntry $default default >>$tmpFile
 
 cat >>$tmpFile <<EOF
-if test "x{overlays}" != "x"; then
-  fdt resize \${overlay_resize}
-  for overlay in \${overlays}; do
-  load mmc \${devno}:1 \${dtbo_addr_r} amlogic/overlays/\${board}/\${overlay}.dtbo \
-      && fdt apply \${dtbo_addr_r}
-  done
-fi
-
-# unzip the kernel
-unzip \${k_addr} \${loadaddr}
 # boot
+echo "Booting system"
 booti \${loadaddr} \${initrd_loadaddr} \${dtb_loadaddr}
 EOF
 

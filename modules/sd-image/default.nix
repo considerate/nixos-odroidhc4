@@ -9,6 +9,7 @@
   ];
 
   security.polkit.enable = false;
+  hardware.deviceTree.name = "amlogic/meson-sm1-odroid-hc4.dtb";
 
   nixpkgs.overlays = [
     (final: prev: {
