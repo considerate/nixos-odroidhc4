@@ -71,7 +71,7 @@ copyInitrd() {
     local dstTmp=$dst.tmp.$$
     # Unzip and convert ramdisk to uInitrd format (u-boot initrd)
     zstd -d "$src" -o "$initrd"
-    mkimage -A arm64 -O linux -T ramdisk -C none -d "$initrd" "$dstTmp" >/dev/null
+    mkimage -A arm64 -O linux -T ramdisk -C none -n uInitrd -d "$initrd" "$dstTmp" >/dev/null
     rm $initrd
     mv $dstTmp $dst
   fi
@@ -98,17 +98,16 @@ addEntry() {
     dtbs=$result
   fi
 
-  echo "echo \"loading kernel\""
-  echo "load mmc \${devno}:1 \${loadaddr} nixos/$(basename $kernel)"
+  echo "echo loading kernel"
+  echo "load mmc \${devno}:1 \${kernel_addr} nixos/$(basename $kernel)"
   dtb=${dtbName:-amlogic/meson-sm1-odroid-hc4.dtb}
-  echo "echo \"loading device tree\""
+  echo "echo loading device tree"
   echo "load mmc \${devno}:1 \${dtb_loadaddr} nixos/$(basename $dtbs)/$dtb"
   echo "fdt addr \${dtb_loadaddr}"
-  echo "echo \"loading init ramdisk\""
+  echo "echo loading ramdisk"
   echo "load mmc \${devno}:1 \${initrd_loadaddr} nixos/$(basename $initrd)"
-  echo "setenv bootargs \"\${bootargs} \""
   echo "# Boot Args"
-  echo "setenv bootargs \"root=root=/dev/mmcblk\${devno}p2  rootwait rw \${condev} \${amlogic} no_console_suspend fsck.repair=yes net.ifnames=0 elevator=noop hdmimode=\${hdmimode} cvbsmode=576cvbs max_freq_a55=\${max_freq_a55} maxcpus=\${maxcpus} voutmode=\${voutmode} \${cmode} disablehpd=\${disablehpd} cvbscable=\${cvbscable} overscan=\${overscan} \${hid_quirks} monitor_onoff=\${monitor_onoff} logo=osd0,loaded \${cec_enable} sdrmode=\${sdrmode} enable_wol=\${enable_wol} systemConfig=$path init=$path/init\""
+  echo "setenv bootargs \"\${bootargs} earlyprintk=aml-uart,0xff803000 root=UUID=2178694e-02 rootwait rw \${condev} \${amlogic} no_console_suspend fsck.repair=yes net.ifnames=0 elevator=noop hdmimode=\${hdmimode} cvbsmode=576cvbs max_freq_a55=\${max_freq_a55} maxcpus=\${maxcpus} voutmode=\${voutmode} \${cmode} disablehpd=\${disablehpd} cvbscable=\${cvbscable} overscan=\${overscan} \${hid_quirks} monitor_onoff=\${monitor_onoff} logo=osd0,loaded \${cec_enable} sdrmode=\${sdrmode} enable_wol=\${enable_wol} systemConfig=$path init=$path/init\""
 }
 
 tmpFile="$target/boot.ini.tmp.$$"
@@ -116,12 +115,9 @@ tmpFile="$target/boot.ini.tmp.$$"
 # This configuration was adapted from the Ubuntu 20.04 image provided
 # on the Hardkernel Wiki.
 cat >$tmpFile <<EOF
-ODROIDHC4-UBOOT-CONFIG
 # Generated file, all changes will be lost on nixos-rebuild!
 
 setenv bootlabel "Hardkernel NixOS 21.05"
-
-echo "Booting \${bootlabel}..."
 
 setenv board "odroidhc4"
 setenv display_autodetect "true"
@@ -139,21 +135,21 @@ setenv enable_wol "0"
 
 # Set load addresses
 setenv dtb_loadaddr "0x10000000"
-setenv loadaddr "0x1B00000"
-setenv initrd_loadaddr "0x00000000"
+setenv kernel_addr "0x1B00000"
+setenv initrd_loadaddr "0x3700000"
 
 setenv max_freq_a55 "1800"
 
-load mmc \${devno}:1 \${loadaddr} config.ini \
-  && ini generic \${loadaddr}
+# load mmc \${devno}:1 \${loadaddr} config.ini \
+#   && ini generic \${loadaddr}
 
-setenv condev "console=ttyS0,115200n8"   # on both
+setenv condev "console=ttyS0,115200"   # on both
 
 ### Normal HDMI Monitors
-if test "\${display_autodetect}" = "true"; then hdmitx edid; fi
-if test "\${hdmimode}" = "custombuilt"; then setenv cmode "modeline=\${modeline}"; fi
-if test "\${cec}" = "true"; then setenv cec_enable "hdmitx=cec3f"; fi
-if test "\${disable_vu7}" = "false"; then setenv hid_quirks "usbhid.quirks=0x0eef:0x0005:0x0004"; fi
+# if test "\${display_autodetect}" = "true"; then hdmitx edid; fi
+# if test "\${hdmimode}" = "custombuilt"; then setenv cmode "modeline=\${modeline}"; fi
+# if test "\${cec}" = "true"; then setenv cec_enable "hdmitx=cec3f"; fi
+# if test "\${disable_vu7}" = "false"; then setenv hid_quirks "usbhid.quirks=0x0eef:0x0005:0x0004"; fi
 
 EOF
 
@@ -164,11 +160,13 @@ addEntry $default default >>$tmpFile
 cat >>$tmpFile <<EOF
 # boot
 echo "Booting system"
-booti \${loadaddr} \${initrd_loadaddr} \${dtb_loadaddr}
+booti \${kernel_addr} \${initrd_loadaddr} \${dtb_loadaddr}
 EOF
 
-mv -f $tmpFile $target/boot.ini
+echo "ODROIDC4-UBOOT-CONFIG" | cat - $tmpFile >$target/boot.ini
 cp -f @configIni@ $target/config.ini
+# Create a boot.scr file from the configuration without the magic line
+mkimage -A arm64 -O linux -T script -C none -d $tmpFile $target/boot.scr
 # Remove obsolete files from $target/nixos.
 for fn in $target/nixos/*; do
   if ! test "${filesCopied[$fn]}" = 1; then

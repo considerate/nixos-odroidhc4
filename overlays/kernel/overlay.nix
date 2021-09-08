@@ -6,7 +6,7 @@ final: prev: {
     # I had to drop "DM_CRYPT y" because of repeated question error in
     # generate-config.pl I hope the default "CONFIG_DM_CRYPT=m" will work
     # fine for the HC4.
-    structuredExtraConfig = with final.lib.kernel; final.lib.mkForce {
+    structuredExtraConfig = with final.lib.kernel; {
       MDIO_BUS_MUX_MESON_G12A = yes;
 
       DM_CRYPT = module;
