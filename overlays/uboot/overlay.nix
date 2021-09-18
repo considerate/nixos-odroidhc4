@@ -13,7 +13,7 @@ let
   with-crypto = import final.path {
     crossSystem = platform;
   };
-  meson64-tools = with-crypto.callPackage ./meson64-tools.nix { };
+  meson64-tools = with-crypto.buildPackages.callPackage ./meson64-tools.nix { };
   blx_fix = arm64.buildPackages.callPackage ./blx_fix.nix { };
   uboot = arm64.callPackage ./u-boot.nix {
     inherit uboot-hardkernel meson64-tools blx_fix;
