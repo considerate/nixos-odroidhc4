@@ -9,8 +9,7 @@ To build an image that can be flashed to an SD card, run:
 $ nix-build
 ```
 
-However, you might want to add your own SSH keys to the [odroidhc4 configuration](./modules/odroidhc4/default.nix)
-before doing so.
+However, you might want to add your own SSH keys to the [configuration](./configuration.nix) before doing so.
 
 To flash the created image run
 
