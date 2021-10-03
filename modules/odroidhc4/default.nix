@@ -11,6 +11,10 @@ with lib;
 
   boot.initrd.availableKernelModules = mkForce [ ];
 
+  # Remove zfs from supported filesystems as it fails due to not being able to
+  # build the kernel module
+  boot.supportedFilesystems = lib.mkForce [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" "cifs" ];
+
   # We do know the hardware we are planning to deploy to
   hardware.enableRedistributableFirmware = mkForce false;
 
