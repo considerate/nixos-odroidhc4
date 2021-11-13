@@ -37,8 +37,8 @@
     # and create a mount point for the FIRMWARE partition at /boot
     populateRootCommands = ''
       mkdir -p ./files/boot ./files/etc/nixos
-      cp ${../../configuration.nix} ./files/etc/nixos/configuration.nix
-      cp -r ${../.} ./files/etc/nixos/modules
+      cp -r --target-directory=./files/etc/nixos ${lib.cleanSource ../..}/*
+      chmod -R u+w ./files/etc/nixos
     '';
   };
 }
