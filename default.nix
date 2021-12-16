@@ -6,16 +6,12 @@ let
   nixos = import "${nixpkgs}/nixos" {
     configuration = { config, ... }: {
       imports = [
+        ./configuration.nix
         ./modules/sd-image
       ];
 
       # set cross compiling
       nixpkgs.crossSystem.config = "aarch64-unknown-linux-gnu";
-
-      # Use pinned packages
-      nixpkgs.pkgs = import "${nixpkgs}" {
-        inherit (config.nixpkgs) config localSystem crossSystem;
-      };
     };
   };
 in

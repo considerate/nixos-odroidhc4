@@ -16,10 +16,6 @@
     })
   ];
 
-  # Remove zfs from supported filesystems as it fails when cross-compiling due
-  # to not being able to build kernel module
-  boot.supportedFilesystems = lib.mkForce [ "btrfs" "reiserfs" "vfat" "f2fs" "xfs" "ntfs" "cifs" ];
-
   sdImage = {
     compressImage = false;
     # Use 512 MB for boot partition to fit multiple kernel versions
@@ -37,8 +33,8 @@
     # and create a mount point for the FIRMWARE partition at /boot
     populateRootCommands = ''
       mkdir -p ./files/boot ./files/etc/nixos
-      cp ${../../configuration.nix} ./files/etc/nixos/configuration.nix
-      cp -r ${../.} ./files/etc/nixos/modules
+      cp -r --target-directory=./files/etc/nixos ${lib.cleanSource ../..}/*
+      chmod -R u+w ./files/etc/nixos
     '';
   };
 }
