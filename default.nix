@@ -1,20 +1,9 @@
+{ system ? builtins.currentSystem }:
 let
-  # Use patched version of nixpkgs to enable cross-compilation
-  # to aarch64 so that we can build the SD-image on a non-ARM
-  # platform.
-  nixpkgs = import ./nixpkgs;
-  nixos = import "${nixpkgs}/nixos" {
-    configuration = { config, ... }: {
-      imports = [
-        ./configuration.nix
-        ./modules/sd-image
-      ];
-
-      # set cross compiling
-      nixpkgs.crossSystem.config = "aarch64-unknown-linux-gnu";
-    };
+  flake-compat-src = fetchTarball {
+    url = https://github.com/edolstra/flake-compat/archive/master.tar.gz;
+    sha256 = "sha256:0jm6nzb83wa6ai17ly9fzpqc40wg1viib8klq8lby54agpl213w5";
   };
+  flake = import flake-compat-src { src = ./.; };
 in
-nixos.config.system.build.sdImage // {
-  inherit (nixos) pkgs system config;
-}
+flake.defaultNix.nixosConfigurations.sd-image.${system}.config.system.build.sdImage
