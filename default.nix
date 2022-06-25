@@ -1,9 +1,8 @@
-{ system ? builtins.currentSystem }:
 let
   flake-compat-src = fetchTarball {
-    url = https://github.com/edolstra/flake-compat/archive/master.tar.gz;
-    sha256 = "sha256:0jm6nzb83wa6ai17ly9fzpqc40wg1viib8klq8lby54agpl213w5";
+    url = https://github.com/edolstra/flake-compat/archive/b4a34015c698c7793d592d66adbab377907a2be8.tar.gz;
+    sha256 = "sha256:1qc703yg0babixi6wshn5wm2kgl5y1drcswgszh4xxzbrwkk9sv7";
   };
   flake = import flake-compat-src { src = ./.; };
 in
-flake.defaultNix.nixosConfigurations.sd-image.${system}.config.system.build.sdImage
+flake.defaultNix.packages.x86_64-linux.sd-image

@@ -1,0 +1,68 @@
+commit 2b2a764490a78a4d29e43e0391aabe1c0d80c034
+Author: Viktor Kronvall <viktor.kronvall@gmail.com>
+Date:   Sat Jun 25 22:34:36 2022 +0900
+
+    Add HC4 uboot configuration
+
+diff --git a/pkgs/misc/uboot/default.nix b/pkgs/misc/uboot/default.nix
+index 2701addf5..8e9840a30 100644
+--- a/pkgs/misc/uboot/default.nix
++++ b/pkgs/misc/uboot/default.nix
+@@ -18,10 +18,10 @@
+ }:
+ 
+ let
+-  defaultVersion = "2021.01";
++  defaultVersion = "2022.04";
+   defaultSrc = fetchurl {
+     url = "ftp://ftp.denx.de/pub/u-boot/u-boot-${defaultVersion}.tar.bz2";
+-    sha256 = "0m04glv9kn3bhs62sn675w60wkrl4m3a4hnbnnw67s3l198y21xl";
++    sha256 = "1l5w13dznj0z1ibqv2d6ljx2ma1gnf5x5ay3dqkqwxr6750nbq38";
+   };
+   buildUBoot = {
+     version ? null
+@@ -285,6 +285,44 @@ in {
+     extraMeta.platforms = ["aarch64-linux"];
+   };
+ 
++  ubootOdroidHC4 = buildUBoot {
++    defconfig = "odroid-hc4_defconfig";
++
++    postBuild = ''
++      ${buildPackages.meson64-tools}/bin/pkg --type bl30 --output bl30_new.bin \
++        ${firmwareOdroidC4}/bl30.bin ${firmwareOdroidC4}/bl301.bin
++      ${buildPackages.meson64-tools}/bin/pkg --type bl2 --output bl2_new.bin \
++        ${firmwareOdroidC4}/bl2.bin ${firmwareOdroidC4}/acs.bin
++
++      ${buildPackages.meson64-tools}/bin/bl30sig --input bl30_new.bin \
++        --output bl30_new.bin.g12a.enc --level v3
++      ${buildPackages.meson64-tools}/bin/bl3sig --input  bl30_new.bin.g12a.enc \
++        --output bl30_new.bin.enc --level v3 --type bl30
++      ${buildPackages.meson64-tools}/bin/bl3sig --input ${firmwareOdroidC4}/bl31.img \
++        --output bl31.img.enc --level v3 --type bl31
++      ${buildPackages.meson64-tools}/bin/bl3sig --input u-boot.bin --compress lz4 \
++        --output bl33.bin.enc --level v3 --type bl33 --compress lz4
++      ${buildPackages.meson64-tools}/bin/bl2sig --input bl2_new.bin \
++        --output bl2.n.bin.sig
++
++      ${buildPackages.meson64-tools}/bin/bootmk --output u-boot.bin \
++        --bl2 bl2.n.bin.sig --bl30 bl30_new.bin.enc --bl31 bl31.img.enc --bl33 bl33.bin.enc \
++        --ddrfw1 ${firmwareOdroidC4}/ddr4_1d.fw \
++        --ddrfw2 ${firmwareOdroidC4}/ddr4_2d.fw \
++        --ddrfw3 ${firmwareOdroidC4}/ddr3_1d.fw \
++        --ddrfw4 ${firmwareOdroidC4}/piei.fw \
++        --ddrfw5 ${firmwareOdroidC4}/lpddr4_1d.fw \
++        --ddrfw6 ${firmwareOdroidC4}/lpddr4_2d.fw \
++        --ddrfw7 ${firmwareOdroidC4}/diag_lpddr4.fw \
++        --ddrfw8 ${firmwareOdroidC4}/aml_ddr.fw \
++        --ddrfw9 ${firmwareOdroidC4}/lpddr3_1d.fw \
++        --level v3
++    '';
++
++    filesToInstall = [ "u-boot.bin" "${firmwareOdroidC4}/sd_fusing.sh"];
++    extraMeta.platforms = ["aarch64-linux"];
++  };
++
+   ubootOdroidXU3 = buildUBoot {
+     defconfig = "odroid-xu3_defconfig";
+     extraMeta.platforms = ["armv7l-linux"];
