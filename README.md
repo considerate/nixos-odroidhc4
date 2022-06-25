@@ -1,42 +1,54 @@
 # Hardkernel NixOS for ODROID HC4
 
-This is an unofficial installation configuration of [NixOS 21.05](https://nixos.org/manual/nixos/stable/) for the [Hardkernel ODROID
-HC4](https://wiki.odroid.com/odroid-hc4/odroid-hc4) microcomputer.
+This is an unofficial installation configuration of [NixOS
+22.05](https://nixos.org/manual/nixos/stable/) for the [Hardkernel
+ODROID HC4](https://wiki.odroid.com/odroid-hc4/odroid-hc4)
+microcomputer.
 
-To build an image that can be flashed to an SD card, run:
+## Usage
 
-```console
-$ nix-build
+The recommended usage is to import this repository as a [nix
+flake](https://nixos.wiki/wiki/Flakes)
+
+Create a flake.nix with the following content:
+
+``` nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-22.05";
+  inputs.nixos-odroidhc4.url = "github:considerate/nixos-odroidhc4/release-22.05";
+  outputs = inputs: {
+    packages.aarch64-linux = {
+      uboot = inputs.nixos-odroidhc4.packages.aarch64-linux.uboot-odroid-hc4;
+      sd-image = inputs.self.nixosConfigurations.nixos-hc4.config.system.build.sdImage;
+    };
+    nixosConfigurations = {
+      nixos-hc4 = inputs.nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [
+          inputs.nixos-odroidhc4.nixosModules.odroidhc4
+          # add your own modules here...
+        ];
+      };
+    };
+  };
+}
 ```
 
-However, you might want to add your own SSH keys to the [configuration](./configuration.nix) before doing so.
+Build the SD image by running:
 
-To flash the created image run
-
-```console
-$ nix-shell -p etcher
-# If you have polkit enabled
-$ etcher
-# If you don't have polkit
-$ sudo etcher --no-sandbox
+``` console
+$ nix build .#packages.aarch64-linux.sd-image
 ```
 
-Select the SD card image from `result/sd-image/nixos-sd-image-21.05pre-git-aarch64-linux.img` and the SD card device and
-flash the image onto the device.
+Copy the built image to an SD-card with:
 
-# Boot the device
+``` console
+# dd if=result/sd-image/nixos-sd-image-*-aarch64-linux.img of=/dev/<DEVICE> status=progress bs=512K
+```
 
-Insert the flashed SD card into your HC4 device and let it boot.
+Add the U-boot boot loader to the SD-card by building and running
 
-# Control your device over SSH
-
-Log in to your booted device over SSH and run an initial `nixos-rebuild switch` to get the non-cross compiled versions
-of all packages. This will also update the u-boot bootloader to load the recently built version of NixOS.
-
-# NixOS generations and limitations of the current configuration
-
-The bootloader is set up using the `boot.ini` script to enable ease of use with the pre-flashed Petitboot that is
-installed in the HC4 SPI flash memory. I have yet to find out how to allow this Petitboot setup to support multiple
-generations of NixOS so that you can choose a previous version of the operating system when booting the device. However,
-by running the `/nix/var/nix/profiles/system-GENERATION-link/bin/switch-to-configuration switch` command you can revert
-to a previous generation if you are able to boot the device on the most recent one.
+``` console
+$ nix build .#packages.aarch64-linux.uboot
+$ ./result/sd_fusing.sh /dev/<DEVICE>
+```
