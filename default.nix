@@ -5,4 +5,4 @@ let
   };
   flake = import flake-compat-src { src = ./.; };
 in
-flake.defaultNix.packages.aarch64-linux.sd-image
+flake.defaultNix.nixosConfigurations.example-hc4.config.system.build.sdImage
