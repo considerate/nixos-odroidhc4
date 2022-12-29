@@ -10,6 +10,12 @@ microcomputer.
 The recommended usage is to import this repository as a [nix
 flake](https://nixos.wiki/wiki/Flakes)
 
+Enable `aarch64` emulation for the host system: 
+
+``` nix 
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+```
+
 Create a flake.nix with the following content:
 
 ``` nix
